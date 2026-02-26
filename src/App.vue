@@ -17,7 +17,9 @@ const systemLinks = [
   { name: 'Acesso AutoCar Perícia', href: 'https://ws.autocarpericia.com.br/index/maisgerencia/?sel=login' },
 ]
 
-const heroDashboardImage = 'https://maisautocar.com.br/lovable-uploads/635b67bb-ead1-461f-bb36-ca141900628f.png'
+const heroDashboardImage = new URL('./assets/img/imgPrincipal.png', import.meta.url).href
+const heroBackgroundTopImage = new URL('./assets/img/ContratosInteligentes.png', import.meta.url).href
+const heroBackgroundBottomImage = new URL('./assets/img/Estoque.png', import.meta.url).href
 const solucoesTopRightImage = 'https://maisautocar.com.br/assets/gestao-estoque-qWZLpoUx.webp'
 
 const heroStats = [
@@ -49,37 +51,37 @@ const solutions = [
     icon: 'mdi-car-multiple',
     title: 'Cadastros Simplificados',
     description: 'Cadastre veículos e clientes com rapidez e facilidade, agilizando suas operações diárias.',
-    image: 'https://maisautocar.com.br/assets/cadastros-simplificados-vRxB7zmK.webp',
+    image: new URL('./assets/img/CadastroSimplificado.png', import.meta.url).href,
   },
   {
     icon: 'mdi-file-document-edit',
     title: 'Contratos Inteligentes',
     description: 'Emita contratos de compra, venda, test-drive e suas operações de forma rápida e direta.',
-    image: 'https://maisautocar.com.br/assets/contratos-inteligentes-lw55TtQT.webp',
+    image: new URL('./assets/img/ContratosInteligentes.png', import.meta.url).href,
   },
   {
     icon: 'mdi-warehouse',
     title: 'Gestão de Estoque',
     description: 'Gerencie seu estoque de veículos de forma eficiente, mantendo tudo atualizado e organizado.',
-    image: 'https://maisautocar.com.br/assets/gestao-estoque-qWZLpoUx.webp',
+    image: new URL('./assets/img/Estoque.png', import.meta.url).href,
   },
   {
     icon: 'mdi-steering',
     title: 'Test-Drive',
     description: 'Agende, gerencie e acompanhe test-drives sem complicações, proporcionando experiência excepcional.',
-    image: 'https://maisautocar.com.br/assets/test-drive-Bsj9BgKN.webp',
+    image: new URL('./assets/img/TestDrive.png', import.meta.url).href,
   },
   {
     icon: 'mdi-transfer',
     title: 'Entradas e Saídas',
     description: 'Controle as entradas e saídas de veículos de maneira prática, mantendo registros precisos.',
-    image: 'https://maisautocar.com.br/assets/entradas-saidas-BbHOQV_J.webp',
+    image: new URL('./assets/img/EntradaSaida.png', import.meta.url).href,
   },
   {
     icon: 'mdi-cash-multiple',
     title: 'Lançamentos Financeiros',
     description: 'Realize lançamentos financeiros de forma rápida e segura, garantindo gestão eficiente.',
-    image: 'https://maisautocar.com.br/assets/lancamentos-financeiros-CihdiYyh.webp',
+    image: new URL('./assets/img/LancamentoFinanceiro.png', import.meta.url).href,
   },
 ]
 
@@ -699,14 +701,14 @@ function submitLead() {
       <section id="inicio" ref="heroSectionRef" class="hero-section">
         <div class="hero-background">
           <img
-            :src="heroDashboardImage"
+            :src="heroBackgroundTopImage"
             alt=""
             aria-hidden="true"
             class="hero-bg-image hero-bg-top-left"
             loading="lazy"
           >
           <img
-            :src="heroDashboardImage"
+            :src="heroBackgroundBottomImage"
             alt=""
             aria-hidden="true"
             class="hero-bg-image hero-bg-bottom-right"
