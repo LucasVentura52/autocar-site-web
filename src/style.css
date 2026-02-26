@@ -763,6 +763,15 @@ a {
   display: block;
 }
 
+.previewable-image {
+  cursor: zoom-in;
+  -webkit-user-drag: none;
+}
+
+.hero-image-main.previewable-image:hover {
+  filter: brightness(1.03);
+}
+
 .floating-chip {
   position: absolute;
   z-index: 4;
@@ -1191,6 +1200,10 @@ a {
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
 }
 
+.solution-image.previewable-image {
+  cursor: zoom-in;
+}
+
 .solution-card:hover .solution-image,
 .solution-card.is-hovered .solution-image,
 .solution-card:focus-within .solution-image {
@@ -1454,15 +1467,17 @@ a {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   background: linear-gradient(180deg, rgba(26, 31, 42, 0.92), rgba(19, 24, 34, 0.94)) !important;
-  transform: perspective(1200px) translate3d(0, 0, 0) scale(1) rotateX(0deg);
-  transform-origin: center bottom;
+  transform: translateY(0) scale(1) !important;
+  transform-origin: center center;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer;
   will-change: transform, box-shadow;
   backface-visibility: hidden;
   transition:
-    transform 0.62s cubic-bezier(0.19, 1, 0.22, 1),
-    box-shadow 0.62s cubic-bezier(0.19, 1, 0.22, 1),
-    border-color 0.38s ease;
+    transform 0.24s cubic-bezier(0.215, 0.61, 0.355, 1),
+    box-shadow 0.24s cubic-bezier(0.215, 0.61, 0.355, 1),
+    border-color 0.2s ease,
+    filter 0.24s cubic-bezier(0.215, 0.61, 0.355, 1) !important;
 }
 
 .plan-card::after {
@@ -1478,10 +1493,12 @@ a {
 
 .plan-card:hover,
 .plan-card:focus-within {
-  transform: perspective(1200px) translate3d(0, -12px, 0) scale(1.013) rotateX(0.7deg);
+  transform: translateY(-10px) scale(1.012) !important;
+  border-color: rgba(255, 122, 26, 0.42) !important;
+  filter: saturate(1.03);
   box-shadow:
-    0 22px 42px rgba(0, 0, 0, 0.3),
-    0 14px 28px rgba(255, 122, 26, 0.18) !important;
+    0 22px 42px rgba(0, 0, 0, 0.32),
+    0 14px 30px rgba(255, 122, 26, 0.2) !important;
 }
 
 .plan-card:hover::after,

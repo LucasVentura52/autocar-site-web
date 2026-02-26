@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import ImagePreviewDialog from './components/ImagePreviewDialog.vue'
 
 const navItems = [
   { name: 'Início', href: '#inicio' },
@@ -279,6 +280,11 @@ const heroSectionRef = ref(null)
 const hoveredSolutionIndex = ref(-1)
 const hoveredSolutionRow = ref(-1)
 const solutionCardsPerRow = ref(3)
+const imagePreviewOpen = ref(false)
+const imagePreviewSrc = ref('')
+const imagePreviewTitle = ref('')
+const imagePreviewStartIndex = ref(0)
+const imagePreviewList = ref([])
 
 let scrollRafId = 0
 let lastKnownScrollY = 0
@@ -507,6 +513,37 @@ function openExternal(url) {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
+function openImagePreview({ src = '', title = '', images = [], startIndex = 0 }) {
+  const normalizedImages = Array.isArray(images) ? images.filter((item) => !!item?.src || typeof item === 'string') : []
+  imagePreviewList.value = normalizedImages
+  imagePreviewStartIndex.value = Math.max(0, Number(startIndex) || 0)
+  imagePreviewSrc.value = src || (typeof normalizedImages[0] === 'string' ? normalizedImages[0] : normalizedImages[0]?.src || '')
+  imagePreviewTitle.value = title
+  imagePreviewOpen.value = true
+}
+
+function openHeroImagePreview() {
+  openImagePreview({
+    src: heroDashboardImage,
+    title: 'Sistema AutoCar',
+    images: [{ src: heroDashboardImage, title: 'Sistema AutoCar' }],
+    startIndex: 0,
+  })
+}
+
+function openSolutionImagePreview(index) {
+  const gallery = solutions.map((item) => ({ src: item.image, title: item.title }))
+  const selected = gallery[index] || gallery[0]
+  if (!selected) return
+
+  openImagePreview({
+    src: selected.src,
+    title: selected.title,
+    images: gallery,
+    startIndex: index,
+  })
+}
+
 function formatCnpj(raw) {
   const digits = raw.replace(/\D/g, '').slice(0, 14)
   if (!digits) return ''
@@ -725,7 +762,8 @@ function submitLead() {
                 <img
                   :src="heroDashboardImage"
                   alt="AutoCar - Sistema de Gestão para Revendas de Veículos"
-                  class="hero-image-main"
+                  class="hero-image-main previewable-image"
+                  @click="openHeroImagePreview"
                 >
                 <div class="floating-chip chip-top">
                   <strong>+2000</strong>
@@ -808,7 +846,12 @@ function submitLead() {
                   <h3>{{ item.title }}</h3>
                   <p>{{ item.description }}</p>
                   <div class="solution-media">
-                    <img :src="item.image" :alt="item.title" class="solution-image">
+                    <img
+                      :src="item.image"
+                      :alt="item.title"
+                      class="solution-image previewable-image"
+                      @click.stop="openSolutionImagePreview(idx)"
+                    >
                   </div>
                 </v-card-text>
               </v-card>
@@ -1146,6 +1189,14 @@ function submitLead() {
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <ImagePreviewDialog
+      v-model="imagePreviewOpen"
+      :src="imagePreviewSrc"
+      :title="imagePreviewTitle"
+      :image-list="imagePreviewList"
+      :start-index="imagePreviewStartIndex"
+    />
 
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3500">
       {{ snackbar.text }}
