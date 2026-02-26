@@ -401,7 +401,8 @@ function setupScrollReveal() {
     { selector: '.clients-section .marquee-shell' },
     { selector: '#solucoes .section-header' },
     { selector: '#solucoes .solution-card', isCard: true, delayStep: 95 },
-    { selector: '#solucoes .highlight-card' },
+    { selector: '#solucoes .highlight-card', isCard: true, delayStep: 90 },
+    { selector: '#solucoes .highlight-item', isCard: true, delayStep: 70 },
     { selector: '#sobre .section-header' },
     { selector: '#sobre .about-card', isCard: true, delayStep: 95 },
     { selector: '#sobre .about-stat-card', isCard: true, delayStep: 95 },
@@ -409,9 +410,15 @@ function setupScrollReveal() {
     { selector: '#pericia .pericia-card', isCard: true, delayStep: 95 },
     { selector: '#planos .section-header' },
     { selector: '#planos .plan-card', isCard: true, delayStep: 95 },
-    { selector: '#planos .diferentials' },
-    { selector: 'footer#contato .footer-grid > .v-col' },
-    { selector: 'footer#contato .footer-bottom' },
+    { selector: '#planos .diferentials', isCard: true, delayStep: 80 },
+    { selector: '#planos .diferentials-item', isCard: true, delayStep: 70 },
+    { selector: 'footer#contato .footer-grid > .v-col', isCard: true, delayStep: 110 },
+    { selector: 'footer#contato .footer-contact div', delayStep: 65 },
+    { selector: 'footer#contato .footer-link', delayStep: 55 },
+    { selector: 'footer#contato .community-qr', isCard: true, delayStep: 80 },
+    { selector: 'footer#contato .social-links a', isCard: true, delayStep: 65 },
+    { selector: 'footer#contato .footer-bottom', isCard: true, delayStep: 110 },
+    { selector: 'footer#contato .footer-bottom-links a', delayStep: 55 },
   ]
 
   const targets = []
@@ -443,8 +450,8 @@ function setupScrollReveal() {
       revealObserver?.unobserve(entry.target)
     })
   }, {
-    threshold: 0.2,
-    rootMargin: '0px 0px -8% 0px',
+    threshold: 0.14,
+    rootMargin: '0px 0px -6% 0px',
   })
 
   targets.forEach((element) => revealObserver?.observe(element))
