@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 
 const navItems = [
   { name: 'Início', href: '#inicio' },
@@ -17,6 +17,7 @@ const systemLinks = [
 ]
 
 const heroDashboardImage = 'https://maisautocar.com.br/lovable-uploads/635b67bb-ead1-461f-bb36-ca141900628f.png'
+const solucoesTopRightImage = 'https://maisautocar.com.br/assets/gestao-estoque-qWZLpoUx.webp'
 
 const heroStats = [
   { target: 2000, label: 'empresas confiam', unit: ' mil', useLocale: true },
@@ -397,28 +398,28 @@ function toggleSolutionOnTouch(index) {
 
 function setupScrollReveal() {
   const groups = [
-    { selector: '.clients-section .section-mini-title' },
-    { selector: '.clients-section .marquee-shell' },
-    { selector: '#solucoes .section-header' },
-    { selector: '#solucoes .solution-card', isCard: true, delayStep: 95 },
-    { selector: '#solucoes .highlight-card', isCard: true, delayStep: 90 },
-    { selector: '#solucoes .highlight-item', isCard: true, delayStep: 70 },
-    { selector: '#sobre .section-header' },
-    { selector: '#sobre .about-card', isCard: true, delayStep: 95 },
-    { selector: '#sobre .about-stat-card', isCard: true, delayStep: 95 },
-    { selector: '#pericia .section-header' },
-    { selector: '#pericia .pericia-card', isCard: true, delayStep: 95 },
-    { selector: '#planos .section-header' },
-    { selector: '#planos .plan-card', isCard: true, delayStep: 95 },
-    { selector: '#planos .diferentials', isCard: true, delayStep: 80 },
-    { selector: '#planos .diferentials-item', isCard: true, delayStep: 70 },
-    { selector: 'footer#contato .footer-grid > .v-col', isCard: true, delayStep: 110 },
-    { selector: 'footer#contato .footer-contact div', delayStep: 65 },
-    { selector: 'footer#contato .footer-link', delayStep: 55 },
-    { selector: 'footer#contato .community-qr', isCard: true, delayStep: 80 },
-    { selector: 'footer#contato .social-links a', isCard: true, delayStep: 65 },
-    { selector: 'footer#contato .footer-bottom', isCard: true, delayStep: 110 },
-    { selector: 'footer#contato .footer-bottom-links a', delayStep: 55 },
+    { selector: '.clients-section .section-mini-title', effectClass: 'reveal-fx-clients' },
+    { selector: '.clients-section .marquee-shell', effectClass: 'reveal-fx-clients' },
+    { selector: '#solucoes .section-header', effectClass: 'reveal-fx-solucoes' },
+    { selector: '#solucoes .solution-card', isCard: true, delayStep: 95, effectClass: 'reveal-fx-solucoes' },
+    { selector: '#solucoes .highlight-card', isCard: true, delayStep: 90, effectClass: 'reveal-fx-solucoes' },
+    { selector: '#solucoes .highlight-item', isCard: true, delayStep: 70, effectClass: 'reveal-fx-solucoes' },
+    { selector: '#sobre .section-header', effectClass: 'reveal-fx-sobre' },
+    { selector: '#sobre .about-card', isCard: true, delayStep: 95, effectClass: 'reveal-fx-sobre' },
+    { selector: '#sobre .about-stat-card', isCard: true, delayStep: 95, effectClass: 'reveal-fx-sobre' },
+    { selector: '#pericia .section-header', effectClass: 'reveal-fx-pericia' },
+    { selector: '#pericia .pericia-card', isCard: true, delayStep: 95, effectClass: 'reveal-fx-pericia' },
+    { selector: '#planos .section-header', effectClass: 'reveal-fx-planos' },
+    { selector: '#planos .plan-col', isCard: true, delayStep: 95, effectClass: 'reveal-fx-planos' },
+    { selector: '#planos .diferentials', isCard: true, delayStep: 80, effectClass: 'reveal-fx-planos' },
+    { selector: '#planos .diferentials-item', isCard: true, delayStep: 70, effectClass: 'reveal-fx-planos' },
+    { selector: 'footer#contato .footer-grid > .v-col', isCard: true, delayStep: 110, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .footer-contact div', delayStep: 65, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .footer-link', delayStep: 55, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .community-qr', isCard: true, delayStep: 80, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .social-links a', isCard: true, delayStep: 65, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .footer-bottom', isCard: true, delayStep: 110, effectClass: 'reveal-fx-footer' },
+    { selector: 'footer#contato .footer-bottom-links a', delayStep: 55, effectClass: 'reveal-fx-footer' },
   ]
 
   const targets = []
@@ -428,6 +429,9 @@ function setupScrollReveal() {
       element.classList.add('scroll-reveal')
       if (group.isCard) {
         element.classList.add('scroll-reveal-card')
+      }
+      if (group.effectClass) {
+        element.classList.add(group.effectClass)
       }
 
       const step = group.delayStep ?? 80
@@ -476,6 +480,12 @@ onUnmounted(() => {
   if (revealObserver) {
     revealObserver.disconnect()
     revealObserver = null
+  }
+})
+
+watch(leadDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    resetLead()
   }
 })
 
@@ -570,18 +580,20 @@ function submitLead() {
         </nav>
 
         <div class="d-none d-lg-flex align-center ga-3 topbar-right">
-          <v-menu>
+          <v-menu location="bottom" offset="10">
             <template #activator="{ props }">
               <v-btn v-bind="props" variant="flat" class="btn-primary-nav" append-icon="mdi-chevron-down" height="40">
                 Acesso ao Sistema
               </v-btn>
             </template>
 
-            <v-list class="access-menu">
+            <v-list class="access-menu" density="compact" nav>
               <v-list-item
                 v-for="link in systemLinks"
                 :key="link.href"
+                class="access-menu-item"
                 :title="link.name"
+                rounded="lg"
                 @click="openExternal(link.href)"
               />
             </v-list>
@@ -622,17 +634,19 @@ function submitLead() {
           {{ item.name }}
         </a>
 
-        <v-menu class="mt-4">
+        <v-menu class="mt-4" location="bottom" offset="10">
           <template #activator="{ props }">
             <v-btn v-bind="props" variant="flat" block class="btn-primary-nav" append-icon="mdi-chevron-down">
               Acesso ao Sistema
             </v-btn>
           </template>
-          <v-list class="access-menu">
+          <v-list class="access-menu" density="compact" nav>
             <v-list-item
               v-for="link in systemLinks"
               :key="`mobile-link-${link.href}`"
+              class="access-menu-item"
               :title="link.name"
+              rounded="lg"
               @click="openExternal(link.href)"
             />
           </v-list>
@@ -746,6 +760,25 @@ function submitLead() {
       <div class="section-divider" />
 
       <section id="solucoes" class="section-block section-muted">
+        <div class="solucoes-background" aria-hidden="true">
+          <img
+            :src="solucoesTopRightImage"
+            alt=""
+            aria-hidden="true"
+            class="solucoes-bg-image solucoes-bg-top-right"
+            loading="lazy"
+          >
+          <img
+            :src="heroDashboardImage"
+            alt=""
+            aria-hidden="true"
+            class="solucoes-bg-image solucoes-bg-bottom-left"
+            loading="lazy"
+          >
+          <div class="solucoes-blob solucoes-blob-top-left" />
+          <div class="solucoes-blob solucoes-blob-bottom-right" />
+        </div>
+
         <v-container>
           <header class="section-header">
             <h2>Oferecemos uma <span>Gestão Simplificada</span> para sua Revenda</h2>
@@ -874,7 +907,7 @@ function submitLead() {
           </header>
 
           <v-row>
-            <v-col v-for="plan in plans" :key="plan.name" cols="12" lg="4">
+            <v-col v-for="plan in plans" :key="plan.name" cols="12" lg="4" class="plan-col">
               <v-card class="plan-card h-100 d-flex flex-column" :class="{ popular: plan.popular }">
                 <div v-if="plan.popular" class="popular-tag">
                   <v-icon icon="mdi-star" size="16" class="mr-1" />
@@ -1006,81 +1039,110 @@ function submitLead() {
       </a>
     </div>
 
-    <v-dialog v-model="leadDialogOpen" max-width="760">
+    <v-dialog v-model="leadDialogOpen" max-width="640">
       <v-card class="lead-card">
-        <v-card-title class="lead-title">
-          Cadastre-se no AutoCar
-        </v-card-title>
+        <v-btn
+          icon
+          variant="text"
+          size="small"
+          class="lead-close-btn"
+          aria-label="Fechar modal"
+          @click="leadDialogOpen = false"
+        >
+          <v-icon icon="mdi-close" size="20" />
+        </v-btn>
 
-        <v-card-text>
-          <v-form @submit.prevent="submitLead">
-            <v-row dense>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  label="Nome da Empresa *"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.nomeEmpresa"
-                  @update:model-value="updateLead('nomeEmpresa', $event)"
-                />
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  label="CNPJ *"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.cnpj"
-                  @update:model-value="updateLead('cnpj', $event)"
-                />
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  label="E-mail *"
+        <v-card-title class="lead-title">Cadastre-se no AutoCar</v-card-title>
+
+        <v-card-text class="lead-body">
+          <form class="lead-form" @submit.prevent="submitLead">
+            <div class="lead-form-grid">
+              <div class="lead-field">
+                <label for="lead-nome">Nome da Empresa *</label>
+                <input
+                  id="lead-nome"
+                  type="text"
+                  class="lead-control lead-control-input"
+                  placeholder="Digite o nome da empresa"
+                  :value="lead.nomeEmpresa"
+                  @input="updateLead('nomeEmpresa', $event.target.value)"
+                >
+              </div>
+
+              <div class="lead-field">
+                <label for="lead-cnpj">CNPJ *</label>
+                <input
+                  id="lead-cnpj"
+                  type="text"
+                  maxlength="18"
+                  inputmode="numeric"
+                  class="lead-control lead-control-input"
+                  placeholder="00.000.000/0000-00"
+                  :value="lead.cnpj"
+                  @input="updateLead('cnpj', $event.target.value)"
+                >
+              </div>
+
+              <div class="lead-field">
+                <label for="lead-email">E-mail *</label>
+                <input
+                  id="lead-email"
                   type="email"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.email"
-                  @update:model-value="updateLead('email', $event)"
-                />
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  label="Telefone/WhatsApp *"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.telefone"
-                  @update:model-value="updateLead('telefone', $event)"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  label="Quantidade de veículos em estoque"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.quantidadeVeiculos"
-                  @update:model-value="updateLead('quantidadeVeiculos', $event)"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  label="Descreva sua necessidade"
-                  rows="4"
-                  variant="outlined"
-                  density="comfortable"
-                  :model-value="lead.necessidade"
-                  @update:model-value="updateLead('necessidade', $event)"
-                />
-              </v-col>
-            </v-row>
+                  class="lead-control lead-control-input"
+                  placeholder="seu@email.com"
+                  :value="lead.email"
+                  @input="updateLead('email', $event.target.value)"
+                >
+              </div>
+
+              <div class="lead-field">
+                <label for="lead-telefone">Telefone/WhatsApp *</label>
+                <input
+                  id="lead-telefone"
+                  type="text"
+                  maxlength="15"
+                  inputmode="numeric"
+                  class="lead-control lead-control-input"
+                  placeholder="(00) 00000-0000"
+                  :value="lead.telefone"
+                  @input="updateLead('telefone', $event.target.value)"
+                >
+              </div>
+
+              <div class="lead-field lead-field-full">
+                <label for="lead-quantidade">Quantidade de veículos em estoque</label>
+                <input
+                  id="lead-quantidade"
+                  type="text"
+                  class="lead-control lead-control-input"
+                  placeholder="Ex: 50 veículos"
+                  :value="lead.quantidadeVeiculos"
+                  @input="updateLead('quantidadeVeiculos', $event.target.value)"
+                >
+              </div>
+
+              <div class="lead-field lead-field-full">
+                <label for="lead-necessidade">Descreva sua necessidade</label>
+                <textarea
+                  id="lead-necessidade"
+                  class="lead-control lead-control-textarea"
+                  placeholder="Conte-nos mais sobre como podemos ajudar sua revenda..."
+                  :value="lead.necessidade"
+                  @input="updateLead('necessidade', $event.target.value)"
+                ></textarea>
+              </div>
+            </div>
 
             <div class="lead-actions">
-              <v-btn variant="outlined" @click="leadDialogOpen = false">Cancelar</v-btn>
-              <v-btn type="submit" class="btn-hero">
-                <v-icon icon="mdi-whatsapp" size="16" class="mr-2" />
+              <v-btn variant="outlined" class="lead-btn lead-btn-cancel" @click="leadDialogOpen = false">
+                Cancelar
+              </v-btn>
+              <v-btn type="submit" class="lead-btn lead-btn-submit">
+                <v-icon icon="mdi-send-outline" size="17" />
                 Enviar via WhatsApp
               </v-btn>
             </div>
-          </v-form>
+          </form>
         </v-card-text>
       </v-card>
     </v-dialog>
