@@ -1,6 +1,44 @@
 <script setup>
 import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+import {
+  mdiAccountGroup,
+  mdiAlertCircleCheck,
+  mdiArrowRight,
+  mdiCarCog,
+  mdiCarInfo,
+  mdiCarMultiple,
+  mdiCardsOutline,
+  mdiCashCheck,
+  mdiCashMultiple,
+  mdiChartLine,
+  mdiCheck,
+  mdiChevronDown,
+  mdiClipboardTextClock,
+  mdiClose,
+  mdiCloudCheck,
+  mdiEmailOutline,
+  mdiFacebook,
+  mdiFileDocumentEdit,
+  mdiFileSearch,
+  mdiInstagram,
+  mdiMapMarkerOutline,
+  mdiMenu,
+  mdiPhoneOutline,
+  mdiReceiptTextCheck,
+  mdiRocketLaunch,
+  mdiSendOutline,
+  mdiShieldCar,
+  mdiShieldCheck,
+  mdiStar,
+  mdiStarCheck,
+  mdiSteering,
+  mdiTimerSandComplete,
+  mdiTransfer,
+  mdiWarehouse,
+  mdiWhatsapp,
+  mdiYoutube,
+} from './icons/mdi'
 
 const ImagePreviewDialog = defineAsyncComponent(() => import('./components/ImagePreviewDialog.vue'))
 
@@ -19,9 +57,9 @@ const systemLinks = [
   { name: 'Acesso AutoCar Perícia', href: 'https://ws.autocarpericia.com.br/index/maisgerencia/?sel=login' },
 ]
 
-const heroDashboardImage = new URL('./assets/img/imgPrincipal.png', import.meta.url).href
-const heroBackgroundTopImage = new URL('./assets/img/ContratosInteligentes.png', import.meta.url).href
-const heroBackgroundBottomImage = new URL('./assets/img/Estoque.png', import.meta.url).href
+const heroDashboardImage = new URL('./assets/img/imgPrincipal.jpg', import.meta.url).href
+const heroBackgroundTopImage = new URL('./assets/img/ContratosInteligentes.jpg', import.meta.url).href
+const heroBackgroundBottomImage = new URL('./assets/img/Estoque.jpg', import.meta.url).href
 const solucoesTopRightImage = 'https://maisautocar.com.br/assets/gestao-estoque-qWZLpoUx.webp'
 
 const heroStats = [
@@ -50,50 +88,50 @@ const marqueeClients = [...clients, ...clients]
 
 const solutions = [
   {
-    icon: 'mdi-car-multiple',
+    icon: mdiCarMultiple,
     title: 'Cadastros Simplificados',
     description: 'Cadastre veículos e clientes com rapidez e facilidade, agilizando suas operações diárias.',
-    image: new URL('./assets/img/CadastroSimplificado.png', import.meta.url).href,
+    image: new URL('./assets/img/CadastroSimplificado.jpg', import.meta.url).href,
   },
   {
-    icon: 'mdi-file-document-edit',
+    icon: mdiFileDocumentEdit,
     title: 'Contratos Inteligentes',
     description: 'Emita contratos de compra, venda, test-drive e suas operações de forma rápida e direta.',
-    image: new URL('./assets/img/ContratosInteligentes.png', import.meta.url).href,
+    image: new URL('./assets/img/ContratosInteligentes.jpg', import.meta.url).href,
   },
   {
-    icon: 'mdi-warehouse',
+    icon: mdiWarehouse,
     title: 'Gestão de Estoque',
     description: 'Gerencie seu estoque de veículos de forma eficiente, mantendo tudo atualizado e organizado.',
-    image: new URL('./assets/img/Estoque.png', import.meta.url).href,
+    image: new URL('./assets/img/Estoque.jpg', import.meta.url).href,
   },
   {
-    icon: 'mdi-steering',
+    icon: mdiSteering,
     title: 'Test-Drive',
     description: 'Agende, gerencie e acompanhe test-drives sem complicações, proporcionando experiência excepcional.',
-    image: new URL('./assets/img/TestDrive.png', import.meta.url).href,
+    image: new URL('./assets/img/TestDrive.jpg', import.meta.url).href,
   },
   {
-    icon: 'mdi-transfer',
+    icon: mdiTransfer,
     title: 'Entradas e Saídas',
     description: 'Controle as entradas e saídas de veículos de maneira prática, mantendo registros precisos.',
-    image: new URL('./assets/img/EntradaSaida.png', import.meta.url).href,
+    image: new URL('./assets/img/EntradaSaida.jpg', import.meta.url).href,
   },
   {
-    icon: 'mdi-cash-multiple',
+    icon: mdiCashMultiple,
     title: 'Lançamentos Financeiros',
     description: 'Realize lançamentos financeiros de forma rápida e segura, garantindo gestão eficiente.',
-    image: new URL('./assets/img/LancamentoFinanceiro.png', import.meta.url).href,
+    image: new URL('./assets/img/LancamentoFinanceiro.jpg', import.meta.url).href,
   },
 ]
 
 const solutionHighlights = [
-  { icon: 'mdi-chart-line', text: 'Relatórios avançados' },
-  { icon: 'mdi-shield-check', text: 'Segurança de dados' },
-  { icon: 'mdi-cloud-check', text: 'Backup automático' },
-  { icon: 'mdi-cards-outline', text: 'Interface intuitiva' },
-  { icon: 'mdi-rocket-launch', text: 'Performance otimizada' },
-  { icon: 'mdi-car-cog', text: 'Especializado em veículos' },
+  { icon: mdiChartLine, text: 'Relatórios avançados' },
+  { icon: mdiShieldCheck, text: 'Segurança de dados' },
+  { icon: mdiCloudCheck, text: 'Backup automático' },
+  { icon: mdiCardsOutline, text: 'Interface intuitiva' },
+  { icon: mdiRocketLaunch, text: 'Performance otimizada' },
+  { icon: mdiCarCog, text: 'Especializado em veículos' },
 ]
 
 const aboutCards = [
@@ -117,40 +155,40 @@ const aboutCards = [
 ]
 
 const aboutStats = [
-  { icon: 'mdi-timer-sand-complete', value: '10+', label: 'Anos de Experiência' },
-  { icon: 'mdi-account-group', value: '1200+', label: 'Clientes Satisfeitos' },
-  { icon: 'mdi-star-check', value: '98%', label: 'Taxa de Satisfação' },
-  { icon: 'mdi-car-info', value: '100k+', label: 'Veículos Gerenciados' },
+  { icon: mdiTimerSandComplete, value: '10+', label: 'Anos de Experiência' },
+  { icon: mdiAccountGroup, value: '1200+', label: 'Clientes Satisfeitos' },
+  { icon: mdiStarCheck, value: '98%', label: 'Taxa de Satisfação' },
+  { icon: mdiCarInfo, value: '100k+', label: 'Veículos Gerenciados' },
 ]
 
 const periciaItems = [
   {
-    icon: 'mdi-file-search',
+    icon: mdiFileSearch,
     title: 'Laudo Pericial Veicular',
     description: 'Acesso completo ao histórico do veículo, multas, dívidas e restrições.',
   },
   {
-    icon: 'mdi-alert-circle-check',
+    icon: mdiAlertCircleCheck,
     title: 'Infrações Detalhadas',
     description: 'Foco em infrações PRF, DER, Prefeituras e outros órgãos.',
   },
   {
-    icon: 'mdi-shield-car',
+    icon: mdiShieldCar,
     title: 'Averiguação de Autenticidade',
     description: 'Verificação de reparos, adulterações e autenticidade do veículo.',
   },
   {
-    icon: 'mdi-receipt-text-check',
+    icon: mdiReceiptTextCheck,
     title: 'Detalhes Fiscais',
     description: 'Informações sobre IPVA, licenciamento, DPVAT e outras taxas.',
   },
   {
-    icon: 'mdi-clipboard-text-clock',
+    icon: mdiClipboardTextClock,
     title: 'Serviços Veiculares',
     description: "Emissão de CRLV's, comunicado de venda, ATPV's.",
   },
   {
-    icon: 'mdi-cash-check',
+    icon: mdiCashCheck,
     title: 'Análise de Crédito',
     description: 'Consultas especializadas para análise de crédito.',
   },
@@ -260,10 +298,10 @@ const quickLinks = [
 const footerSolutions = ['Gestão de Estoque', 'Contratos', 'Financeiro', 'Test-Drive']
 
 const socialLinks = [
-  { icon: 'mdi-facebook', href: 'https://www.facebook.com/share/1CTqVgvQ6k/?mibextid=wwXIfr' },
-  { icon: 'mdi-instagram', href: 'https://www.instagram.com/maisgerenciaautocar/' },
-  { icon: 'mdi-youtube', href: '#' },
-  { icon: 'mdi-whatsapp', href: 'https://wa.me/5544991740995' },
+  { icon: mdiFacebook, href: 'https://www.facebook.com/share/1CTqVgvQ6k/?mibextid=wwXIfr' },
+  { icon: mdiInstagram, href: 'https://www.instagram.com/maisgerenciaautocar/' },
+  { icon: mdiYoutube, href: '#' },
+  { icon: mdiWhatsapp, href: 'https://wa.me/5544991740995' },
 ]
 
 const diferentials = [
@@ -665,7 +703,7 @@ function submitLead() {
         <div v-if="lgAndUp" class="align-center ga-3 topbar-right">
           <v-menu location="bottom" offset="10">
             <template #activator="{ props }">
-              <v-btn v-bind="props" variant="flat" class="btn-primary-nav" append-icon="mdi-chevron-down" height="40">
+              <v-btn v-bind="props" variant="flat" class="btn-primary-nav" :append-icon="mdiChevronDown" height="40">
                 Acesso ao Sistema
               </v-btn>
             </template>
@@ -678,13 +716,13 @@ function submitLead() {
 
           <v-btn variant="outlined" class="btn-outline-nav" height="40" @click="leadDialogOpen = true">
             Cadastre-se
-            <v-icon icon="mdi-arrow-right" size="16" class="ml-1" />
+            <v-icon :icon="mdiArrowRight" size="16" class="ml-1" />
           </v-btn>
         </div>
 
         <v-btn v-else variant="text" icon :aria-label="mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'"
           @click="mobileMenuOpen = !mobileMenuOpen">
-          <v-icon :icon="mobileMenuOpen ? 'mdi-close' : 'mdi-menu'" />
+          <v-icon :icon="mobileMenuOpen ? mdiClose : mdiMenu" />
         </v-btn>
       </v-container>
     </v-app-bar>
@@ -698,7 +736,7 @@ function submitLead() {
 
         <v-menu location="bottom" offset="10">
           <template #activator="{ props }">
-            <v-btn v-bind="props" variant="flat" block class="btn-primary-nav mt-4" append-icon="mdi-chevron-down">
+            <v-btn v-bind="props" variant="flat" block class="btn-primary-nav mt-4" :append-icon="mdiChevronDown">
               Acesso ao Sistema
             </v-btn>
           </template>
@@ -746,7 +784,7 @@ function submitLead() {
               <div class="hero-actions">
                 <v-btn size="x-large" class="btn-hero hero-cta" @click="leadDialogOpen = true">
                   Agendar Apresentação
-                  <v-icon icon="mdi-arrow-right" size="18" class="ml-2" />
+                  <v-icon :icon="mdiArrowRight" size="18" class="ml-2" />
                 </v-btn>
               </div>
 
@@ -831,8 +869,7 @@ function submitLead() {
                   <p>{{ item.description }}</p>
                   <div class="solution-media">
                     <img :src="item.image" :alt="item.title" class="solution-image previewable-image" loading="lazy"
-                      decoding="async"
-                      @click.stop="openSolutionImagePreview(idx)">
+                      decoding="async" @click.stop="openSolutionImagePreview(idx)">
                   </div>
                 </v-card-text>
               </v-card>
@@ -936,7 +973,7 @@ function submitLead() {
             <v-col v-for="plan in plans" :key="plan.name" cols="12" lg="4" class="plan-col">
               <v-card class="plan-card h-100 d-flex flex-column" :class="{ popular: plan.popular }">
                 <div v-if="plan.popular" class="popular-tag">
-                  <v-icon icon="mdi-star" size="16" class="mr-1" />
+                  <v-icon :icon="mdiStar" size="16" class="mr-1" />
                   Mais Popular
                 </div>
 
@@ -949,7 +986,7 @@ function submitLead() {
                 <v-card-text class="pt-0 plan-body">
                   <ul class="plan-feature-list">
                     <li v-for="feature in plan.features" :key="feature">
-                      <v-icon icon="mdi-check" size="20" />
+                      <v-icon :icon="mdiCheck" size="20" />
                       <span>{{ feature }}</span>
                     </li>
                   </ul>
@@ -972,7 +1009,7 @@ function submitLead() {
             <p>Veja nossos diferenciais</p>
             <div class="diferentials-grid">
               <div v-for="item in diferentials" :key="item" class="diferentials-item">
-                <v-icon icon="mdi-check" size="20" />
+                <v-icon :icon="mdiCheck" size="20" />
                 <span>{{ item }}</span>
               </div>
             </div>
@@ -993,9 +1030,9 @@ function submitLead() {
               importa: vender mais.
             </p>
             <div class="footer-contact">
-              <div><v-icon icon="mdi-email-outline" size="16" /> contato@maisgerencia.com.br</div>
-              <div><v-icon icon="mdi-phone-outline" size="16" /> (44) 99174-0995</div>
-              <div><v-icon icon="mdi-map-marker-outline" size="16" /> Cianorte, PR</div>
+              <div><v-icon :icon="mdiEmailOutline" size="16" /> contato@maisgerencia.com.br</div>
+              <div><v-icon :icon="mdiPhoneOutline" size="16" /> (44) 99174-0995</div>
+              <div><v-icon :icon="mdiMapMarkerOutline" size="16" /> Cianorte, PR</div>
             </div>
           </v-col>
 
@@ -1056,7 +1093,7 @@ function submitLead() {
 
       <a :href="quoteWhatsappUrl" target="_blank" rel="noopener noreferrer" aria-label="Contatar via WhatsApp"
         class="wa-button">
-        <v-icon icon="mdi-whatsapp" size="38" />
+        <v-icon :icon="mdiWhatsapp" size="38" />
       </a>
     </div>
 
@@ -1064,7 +1101,7 @@ function submitLead() {
       <v-card class="lead-card">
         <v-btn icon variant="text" size="small" class="lead-close-btn" aria-label="Fechar modal"
           @click="leadDialogOpen = false">
-          <v-icon icon="mdi-close" size="20" />
+          <v-icon :icon="mdiClose" size="20" />
         </v-btn>
 
         <v-card-title class="lead-title">Cadastre-se no AutoCar</v-card-title>
@@ -1119,7 +1156,7 @@ function submitLead() {
                 Cancelar
               </v-btn>
               <v-btn type="submit" class="lead-btn lead-btn-submit">
-                <v-icon icon="mdi-send-outline" size="17" />
+                <v-icon :icon="mdiSendOutline" size="17" />
                 Enviar via WhatsApp
               </v-btn>
             </div>

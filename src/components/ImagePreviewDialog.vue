@@ -1,13 +1,6 @@
 <template>
-  <v-dialog
-    :model-value="modelValue"
-    fullscreen
-    transition="fade-transition"
-    @update:model-value="onDialogUpdate"
-    @keydown.left.prevent="prevImage"
-    @keydown.right.prevent="nextImage"
-    @keydown.esc.prevent="close"
-  >
+  <v-dialog :model-value="modelValue" fullscreen transition="fade-transition" @update:model-value="onDialogUpdate"
+    @keydown.left.prevent="prevImage" @keydown.right.prevent="nextImage" @keydown.esc.prevent="close">
     <div class="ip-lightbox-shell" @click="close">
       <div v-if="titleText" class="ip-lightbox-title">
         {{ titleText }}
@@ -17,39 +10,43 @@
         <v-tooltip text="Rotacionar para a esquerda" location="bottom">
           <template #activator="{ props }">
             <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="rotateLeft" :disabled="!currentSrc">
-              <v-icon size="22">mdi-rotate-left</v-icon>
+              <v-icon :icon="mdiRotateLeft" size="22" />
             </v-btn>
           </template>
         </v-tooltip>
 
         <v-tooltip text="Rotacionar para a direita" location="bottom">
           <template #activator="{ props }">
-            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="rotateRight" :disabled="!currentSrc">
-              <v-icon size="22">mdi-rotate-right</v-icon>
+            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="rotateRight"
+              :disabled="!currentSrc">
+              <v-icon :icon="mdiRotateRight" size="22" />
             </v-btn>
           </template>
         </v-tooltip>
 
         <v-tooltip text="Diminuir zoom" location="bottom">
           <template #activator="{ props }">
-            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="zoomOut" :disabled="!currentSrc || zoom <= 0.6">
-              <v-icon size="22">mdi-magnify-minus-outline</v-icon>
+            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="zoomOut"
+              :disabled="!currentSrc || zoom <= 0.6">
+              <v-icon :icon="mdiMagnifyMinusOutline" size="22" />
             </v-btn>
           </template>
         </v-tooltip>
 
         <v-tooltip text="Aumentar zoom" location="bottom">
           <template #activator="{ props }">
-            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="zoomIn" :disabled="!currentSrc || zoom >= 3.6">
-              <v-icon size="22">mdi-magnify-plus-outline</v-icon>
+            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="zoomIn"
+              :disabled="!currentSrc || zoom >= 3.6">
+              <v-icon :icon="mdiMagnifyPlusOutline" size="22" />
             </v-btn>
           </template>
         </v-tooltip>
 
         <v-tooltip text="Baixar imagem" location="bottom">
           <template #activator="{ props }">
-            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="downloadCurrentImage" :disabled="!currentSrc">
-              <v-icon size="22">mdi-download</v-icon>
+            <v-btn v-bind="props" icon class="ip-action-btn" variant="text" @click="downloadCurrentImage"
+              :disabled="!currentSrc">
+              <v-icon :icon="mdiDownload" size="22" />
             </v-btn>
           </template>
         </v-tooltip>
@@ -57,7 +54,7 @@
         <v-tooltip text="Fechar" location="bottom">
           <template #activator="{ props }">
             <v-btn v-bind="props" icon class="ip-action-btn ip-action-btn--close" variant="text" @click="close">
-              <v-icon size="24">mdi-close</v-icon>
+              <v-icon :icon="mdiClose" size="24" />
             </v-btn>
           </template>
         </v-tooltip>
@@ -66,26 +63,21 @@
       <div class="ip-lightbox-content" @click.stop>
         <transition :name="slideDirection === 'prev' ? 'ip-slide-prev' : 'ip-slide-next'">
           <div v-if="currentSrc" :key="`${activeIndex}-${currentSrc}`" class="ip-lightbox-image-frame">
-            <img
-              :src="currentSrc"
-              :alt="titleText || 'Visualização de imagem'"
-              class="ip-lightbox-image"
-              :style="imageStyle"
-              loading="lazy"
-            >
+            <img :src="currentSrc" :alt="titleText || 'Visualização de imagem'" class="ip-lightbox-image"
+              :style="imageStyle" loading="lazy">
           </div>
         </transition>
       </div>
 
       <div v-if="imageItems.length > 1" class="ip-lightbox-bottom-nav" @click.stop>
         <v-btn icon variant="text" class="ip-nav-btn" @click="prevImage">
-          <v-icon size="28">mdi-chevron-left</v-icon>
+          <v-icon :icon="mdiChevronLeft" size="28" />
         </v-btn>
 
         <span class="ip-counter">{{ activeIndex + 1 }} / {{ imageItems.length }}</span>
 
         <v-btn icon variant="text" class="ip-nav-btn" @click="nextImage">
-          <v-icon size="28">mdi-chevron-right</v-icon>
+          <v-icon :icon="mdiChevronRight" size="28" />
         </v-btn>
       </div>
     </div>
@@ -94,6 +86,16 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import {
+  mdiChevronLeft,
+  mdiChevronRight,
+  mdiClose,
+  mdiDownload,
+  mdiMagnifyMinusOutline,
+  mdiMagnifyPlusOutline,
+  mdiRotateLeft,
+  mdiRotateRight,
+} from '../icons/mdi'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -192,12 +194,23 @@ function normalizeFileName(name) {
   return safe || 'imagem'
 }
 
+function getFileExtension(src) {
+  try {
+    const pathname = new URL(src, window.location.href).pathname
+    const match = pathname.match(/\.([a-z0-9]+)$/i)
+    return match?.[1]?.toLowerCase() || 'jpg'
+  }
+  catch {
+    return 'jpg'
+  }
+}
+
 function downloadCurrentImage() {
   if (!currentSrc.value) return
   const link = document.createElement('a')
   link.href = currentSrc.value
   link.target = '_blank'
-  link.download = `${normalizeFileName(titleText.value || 'imagem')}.png`
+  link.download = `${normalizeFileName(titleText.value || 'imagem')}.${getFileExtension(currentSrc.value)}`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
