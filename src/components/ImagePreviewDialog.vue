@@ -62,9 +62,22 @@
 
       <div class="ip-lightbox-content" @click.stop>
         <transition :name="slideDirection === 'prev' ? 'ip-slide-prev' : 'ip-slide-next'">
-          <div v-if="currentSrc" :key="`${activeIndex}-${currentSrc}`" class="ip-lightbox-image-frame">
+          <div
+            v-if="currentSrc"
+            :key="`${activeIndex}-${currentSrc}`"
+            class="ip-lightbox-image-frame"
+            @pointermove="onPointerMove"
+            @pointerup="endDrag"
+            @pointercancel="endDrag"
+            @pointerleave="endDrag"
+          >
             <img :src="currentSrc" :alt="titleText || 'Visualização de imagem'" class="ip-lightbox-image"
-              :style="imageStyle" loading="lazy">
+              :class="{ 'is-dragging': isDragging, 'is-draggable': isDraggable }"
+              :style="imageStyle"
+              draggable="false"
+              loading="lazy"
+              @dragstart.prevent
+              @pointerdown.stop.prevent="startDrag">
           </div>
         </transition>
       </div>
@@ -111,6 +124,14 @@ const activeIndex = ref(0)
 const zoom = ref(1)
 const rotation = ref(0)
 const slideDirection = ref('next')
+const panX = ref(0)
+const panY = ref(0)
+const isDragging = ref(false)
+const dragPointerId = ref(null)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragOriginX = ref(0)
+const dragOriginY = ref(0)
 
 const imageItems = computed(() => {
   if (Array.isArray(props.imageList) && props.imageList.length) {
@@ -134,9 +155,10 @@ const imageItems = computed(() => {
 const currentItem = computed(() => imageItems.value[activeIndex.value] || null)
 const currentSrc = computed(() => currentItem.value?.src || props.src || '')
 const titleText = computed(() => currentItem.value?.title || props.title || '')
+const isDraggable = computed(() => zoom.value > 1)
 
 const imageStyle = computed(() => ({
-  transform: `scale(${zoom.value}) rotate(${rotation.value}deg)`,
+  transform: `translate3d(${panX.value}px, ${panY.value}px, 0) scale(${zoom.value}) rotate(${rotation.value}deg)`,
 }))
 
 function clampIndex(index) {
@@ -147,6 +169,10 @@ function clampIndex(index) {
 function resetTransforms() {
   zoom.value = 1
   rotation.value = 0
+  panX.value = 0
+  panY.value = 0
+  isDragging.value = false
+  dragPointerId.value = null
 }
 
 function openAtStartIndex() {
@@ -184,6 +210,30 @@ function rotateLeft() {
 
 function rotateRight() {
   rotation.value += 90
+}
+
+function startDrag(event) {
+  if (!isDraggable.value) return
+  event.currentTarget?.setPointerCapture?.(event.pointerId)
+  isDragging.value = true
+  dragPointerId.value = event.pointerId
+  dragStartX.value = event.clientX
+  dragStartY.value = event.clientY
+  dragOriginX.value = panX.value
+  dragOriginY.value = panY.value
+}
+
+function onPointerMove(event) {
+  if (!isDragging.value || dragPointerId.value !== event.pointerId) return
+  panX.value = dragOriginX.value + (event.clientX - dragStartX.value)
+  panY.value = dragOriginY.value + (event.clientY - dragStartY.value)
+}
+
+function endDrag(event) {
+  if (event && dragPointerId.value !== null && dragPointerId.value !== event.pointerId) return
+  event?.currentTarget?.releasePointerCapture?.(event.pointerId)
+  isDragging.value = false
+  dragPointerId.value = null
 }
 
 function normalizeFileName(name) {
@@ -246,6 +296,15 @@ watch(
 
 watch(activeIndex, (index) => {
   emit('update:index', index)
+})
+
+watch(zoom, (value) => {
+  if (value <= 1) {
+    panX.value = 0
+    panY.value = 0
+    isDragging.value = false
+    dragPointerId.value = null
+  }
 })
 </script>
 
@@ -324,8 +383,19 @@ watch(activeIndex, (index) => {
   max-height: 100%;
   object-fit: contain;
   user-select: none;
+  -webkit-user-drag: none;
   border-radius: 10px;
   transition: transform 0.22s ease;
+  touch-action: none;
+}
+
+.ip-lightbox-image.is-draggable {
+  cursor: grab;
+}
+
+.ip-lightbox-image.is-dragging {
+  cursor: grabbing;
+  transition: none;
 }
 
 .ip-slide-next-enter-active,
