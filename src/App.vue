@@ -1,6 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import ImagePreviewDialog from './components/ImagePreviewDialog.vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
+
+const ImagePreviewDialog = defineAsyncComponent(() => import('./components/ImagePreviewDialog.vue'))
 
 const navItems = [
   { name: 'Início', href: '#inicio' },
@@ -291,6 +293,8 @@ const imagePreviewList = ref([])
 let scrollRafId = 0
 let lastKnownScrollY = 0
 let revealObserver = null
+let reducedMotionQuery = null
+let handleReducedMotionChange = null
 
 const lead = reactive({
   nomeEmpresa: '',
@@ -312,6 +316,10 @@ const quoteText = 'Olá! Gostaria de mais informações sobre o sistema.'
 const quoteWhatsappUrl = computed(() => `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(quoteText)}`)
 
 const currentYear = new Date().getFullYear()
+const { lgAndUp } = useDisplay()
+const prefersReducedMotion = ref(false)
+
+const shouldAnimateHeroMotion = computed(() => lgAndUp.value && !prefersReducedMotion.value)
 
 function formatHeroCounter(stat, value) {
   const number = Math.floor(value)
@@ -349,7 +357,15 @@ function runHeroCounters() {
 }
 
 function updateHeroParallax(scrollY) {
-  if (!heroSectionRef.value) return
+  if (!heroSectionRef.value || !shouldAnimateHeroMotion.value) {
+    heroSectionRef.value?.style.setProperty('--hero-top-shift', '0px')
+    heroSectionRef.value?.style.setProperty('--hero-top-scale', '1')
+    heroSectionRef.value?.style.setProperty('--hero-bottom-shift', '0px')
+    heroSectionRef.value?.style.setProperty('--hero-bottom-scale', '1')
+    heroSectionRef.value?.style.setProperty('--hero-backdrop-shift', '0px')
+    heroSectionRef.value?.style.setProperty('--hero-backdrop-scale', '1')
+    return
+  }
 
   const progress = Math.min(Math.max(scrollY / 500, 0), 1)
   heroSectionRef.value.style.setProperty('--hero-top-shift', `${progress * 108}px`)
@@ -363,6 +379,11 @@ function updateHeroParallax(scrollY) {
 function updateScrollVisualState() {
   lastKnownScrollY = window.scrollY
   isHeaderScrolled.value = lastKnownScrollY > 8
+
+  if (!shouldAnimateHeroMotion.value) {
+    updateHeroParallax(0)
+    return
+  }
 
   if (scrollRafId) return
 
@@ -470,6 +491,12 @@ function setupScrollReveal() {
 }
 
 onMounted(() => {
+  reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  prefersReducedMotion.value = reducedMotionQuery.matches
+  handleReducedMotionChange = (event) => {
+    prefersReducedMotion.value = event.matches
+  }
+  reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
   updateSolutionCardsPerRow()
   updateScrollVisualState()
   setupScrollReveal()
@@ -481,6 +508,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateSolutionCardsPerRow)
   window.removeEventListener('scroll', updateScrollVisualState)
+  if (reducedMotionQuery && handleReducedMotionChange) {
+    reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
+  }
   if (scrollRafId) {
     cancelAnimationFrame(scrollRafId)
     scrollRafId = 0
@@ -495,6 +525,16 @@ watch(leadDialogOpen, (isOpen) => {
   if (!isOpen) {
     resetLead()
   }
+})
+
+watch(lgAndUp, (isDesktop) => {
+  if (isDesktop) {
+    mobileMenuOpen.value = false
+  }
+})
+
+watch(shouldAnimateHeroMotion, () => {
+  updateScrollVisualState()
 })
 
 function notify(text, color = 'info') {
@@ -608,17 +648,19 @@ function submitLead() {
       <v-container class="topbar-wrap">
         <div class="topbar-left">
           <button class="logo-button" @click="goTo('#inicio')">
-            <img src="https://maisautocar.com.br/lovable-uploads/autocar-logo-white.png" alt="AutoCar Logo" class="site-logo">
+            <img src="https://maisautocar.com.br/lovable-uploads/autocar-logo-white.png" alt="AutoCar Logo"
+              class="site-logo">
           </button>
         </div>
 
-        <nav class="d-none d-lg-flex nav-list topbar-center">
-          <a v-for="item in navItems" :key="item.href" :href="item.href" class="nav-link" @click.prevent="goTo(item.href)">
+        <nav v-if="lgAndUp" class="nav-list topbar-center">
+          <a v-for="item in navItems" :key="item.href" :href="item.href" class="nav-link"
+            @click.prevent="goTo(item.href)">
             {{ item.name }}
           </a>
         </nav>
 
-        <div class="d-none d-lg-flex align-center ga-3 topbar-right">
+        <div v-if="lgAndUp" class="align-center ga-3 topbar-right">
           <v-menu location="bottom" offset="10">
             <template #activator="{ props }">
               <v-btn v-bind="props" variant="flat" class="btn-primary-nav" append-icon="mdi-chevron-down" height="40">
@@ -627,14 +669,8 @@ function submitLead() {
             </template>
 
             <v-list class="access-menu" density="compact" nav>
-              <v-list-item
-                v-for="link in systemLinks"
-                :key="link.href"
-                class="access-menu-item"
-                :title="link.name"
-                rounded="lg"
-                @click="openExternal(link.href)"
-              />
+              <v-list-item v-for="link in systemLinks" :key="link.href" class="access-menu-item" :title="link.name"
+                rounded="lg" @click="openExternal(link.href)" />
             </v-list>
           </v-menu>
 
@@ -644,50 +680,29 @@ function submitLead() {
           </v-btn>
         </div>
 
-        <v-btn
-          class="d-lg-none"
-          variant="text"
-          icon
-          :aria-label="mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'"
-          @click="mobileMenuOpen = !mobileMenuOpen"
-        >
+        <v-btn v-else variant="text" icon :aria-label="mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'"
+          @click="mobileMenuOpen = !mobileMenuOpen">
           <v-icon :icon="mobileMenuOpen ? 'mdi-close' : 'mdi-menu'" />
         </v-btn>
       </v-container>
     </v-app-bar>
 
-    <v-navigation-drawer
-      v-model="mobileMenuOpen"
-      location="right"
-      temporary
-      class="mobile-drawer"
-    >
-      <div class="mobile-drawer-body">
-        <a
-          v-for="item in navItems"
-          :key="`mobile-${item.href}`"
-          :href="item.href"
-          class="mobile-nav-link"
-          @click.prevent="goTo(item.href)"
-        >
+    <v-navigation-drawer v-model="mobileMenuOpen" location="right" temporary class="mobile-drawer">
+      <div class="mobile-drawer-body mt-n4">
+        <a v-for="item in navItems" :key="`mobile-${item.href}`" :href="item.href" class="mobile-nav-link"
+          @click.prevent="goTo(item.href)">
           {{ item.name }}
         </a>
 
-        <v-menu class="mt-4" location="bottom" offset="10">
+        <v-menu location="bottom" offset="10">
           <template #activator="{ props }">
-            <v-btn v-bind="props" variant="flat" block class="btn-primary-nav" append-icon="mdi-chevron-down">
+            <v-btn v-bind="props" variant="flat" block class="btn-primary-nav mt-4" append-icon="mdi-chevron-down">
               Acesso ao Sistema
             </v-btn>
           </template>
           <v-list class="access-menu" density="compact" nav>
-            <v-list-item
-              v-for="link in systemLinks"
-              :key="`mobile-link-${link.href}`"
-              class="access-menu-item"
-              :title="link.name"
-              rounded="lg"
-              @click="openExternal(link.href)"
-            />
+            <v-list-item v-for="link in systemLinks" :key="`mobile-link-${link.href}`" class="access-menu-item"
+              :title="link.name" rounded="lg" @click="openExternal(link.href)" />
           </v-list>
         </v-menu>
 
@@ -700,20 +715,10 @@ function submitLead() {
     <v-main>
       <section id="inicio" ref="heroSectionRef" class="hero-section">
         <div class="hero-background">
-          <img
-            :src="heroBackgroundTopImage"
-            alt=""
-            aria-hidden="true"
-            class="hero-bg-image hero-bg-top-left"
-            loading="lazy"
-          >
-          <img
-            :src="heroBackgroundBottomImage"
-            alt=""
-            aria-hidden="true"
-            class="hero-bg-image hero-bg-bottom-right"
-            loading="lazy"
-          >
+          <img :src="heroBackgroundTopImage" alt="" aria-hidden="true" class="hero-bg-image hero-bg-top-left"
+            loading="lazy">
+          <img :src="heroBackgroundBottomImage" alt="" aria-hidden="true" class="hero-bg-image hero-bg-bottom-right"
+            loading="lazy">
           <div class="hero-blob hero-blob-a" />
           <div class="hero-blob hero-blob-b" />
           <div class="hero-blob hero-blob-c" />
@@ -731,7 +736,9 @@ function submitLead() {
               </h1>
 
               <p class="hero-subtitle">
-                CRM + Gestão Administrativa + Financeira + Nota Fiscal Eletrônica + Site + Contratos + Consultas veiculares + Integradores
+                CRM + Gestão Administrativa + Financeira + Nota Fiscal Eletrônica + Site + Contratos + Consultas
+                veiculares
+                + Integradores
               </p>
 
               <div class="hero-actions">
@@ -754,19 +761,11 @@ function submitLead() {
 
             <div class="hero-media">
               <div class="hero-image-card">
-                <img
-                  :src="heroDashboardImage"
-                  alt=""
-                  aria-hidden="true"
-                  class="hero-image-backdrop"
-                  loading="lazy"
-                >
-                <img
-                  :src="heroDashboardImage"
-                  alt="AutoCar - Sistema de Gestão para Revendas de Veículos"
-                  class="hero-image-main previewable-image"
-                  @click="openHeroImagePreview"
-                >
+                <img :src="heroDashboardImage" alt="" aria-hidden="true" class="hero-image-backdrop" loading="eager"
+                  fetchpriority="high" decoding="async">
+                <img :src="heroDashboardImage" alt="AutoCar - Sistema de Gestão para Revendas de Veículos"
+                  class="hero-image-main previewable-image" fetchpriority="high" decoding="async"
+                  @click="openHeroImagePreview">
                 <div class="floating-chip chip-top">
                   <strong>+2000</strong>
                   <span>Clientes ativos</span>
@@ -791,7 +790,7 @@ function submitLead() {
         <div class="marquee-shell">
           <div class="marquee-track">
             <div v-for="(client, idx) in marqueeClients" :key="`client-${idx}`" class="logo-pill">
-              <img :src="client.logo" :alt="client.name">
+              <img :src="client.logo" :alt="client.name" loading="lazy" decoding="async">
             </div>
           </div>
         </div>
@@ -801,20 +800,10 @@ function submitLead() {
 
       <section id="solucoes" class="section-block section-muted">
         <div class="solucoes-background" aria-hidden="true">
-          <img
-            :src="solucoesTopRightImage"
-            alt=""
-            aria-hidden="true"
-            class="solucoes-bg-image solucoes-bg-top-right"
-            loading="lazy"
-          >
-          <img
-            :src="heroDashboardImage"
-            alt=""
-            aria-hidden="true"
-            class="solucoes-bg-image solucoes-bg-bottom-left"
-            loading="lazy"
-          >
+          <img :src="solucoesTopRightImage" alt="" aria-hidden="true" class="solucoes-bg-image solucoes-bg-top-right"
+            loading="lazy">
+          <img :src="heroDashboardImage" alt="" aria-hidden="true" class="solucoes-bg-image solucoes-bg-bottom-left"
+            loading="lazy">
           <div class="solucoes-blob solucoes-blob-top-left" />
           <div class="solucoes-blob solucoes-blob-bottom-right" />
         </div>
@@ -825,22 +814,13 @@ function submitLead() {
             <p>Sistema completo para gestão de lojas de veículos multimarcas.</p>
           </header>
 
-          <v-row
-            class="mb-10 solutions-grid"
-            @mouseleave="clearHoveredSolution"
-          >
+          <v-row class="mb-10 solutions-grid" @mouseleave="clearHoveredSolution">
             <v-col v-for="(item, idx) in solutions" :key="item.title" cols="12" md="6" lg="4">
-              <v-card
-                class="solution-card"
-                :class="{
-                  'is-hovered': hoveredSolutionIndex === idx,
-                  'is-row-expanded': hoveredSolutionRow === Math.floor(idx / solutionCardsPerRow),
-                }"
-                @mouseenter="setHoveredSolution(idx)"
-                @focusin="setHoveredSolution(idx)"
-                @focusout="clearHoveredSolution"
-                @click="toggleSolutionOnTouch(idx)"
-              >
+              <v-card class="solution-card" :class="{
+                'is-hovered': hoveredSolutionIndex === idx,
+                'is-row-expanded': hoveredSolutionRow === Math.floor(idx / solutionCardsPerRow),
+              }" @mouseenter="setHoveredSolution(idx)" @focusin="setHoveredSolution(idx)"
+                @focusout="clearHoveredSolution" @click="toggleSolutionOnTouch(idx)">
                 <v-card-text>
                   <div class="solution-icon">
                     <v-icon :icon="item.icon" size="30" />
@@ -848,12 +828,9 @@ function submitLead() {
                   <h3>{{ item.title }}</h3>
                   <p>{{ item.description }}</p>
                   <div class="solution-media">
-                    <img
-                      :src="item.image"
-                      :alt="item.title"
-                      class="solution-image previewable-image"
-                      @click.stop="openSolutionImagePreview(idx)"
-                    >
+                    <img :src="item.image" :alt="item.title" class="solution-image previewable-image" loading="lazy"
+                      decoding="async"
+                      @click.stop="openSolutionImagePreview(idx)">
                   </div>
                 </v-card-text>
               </v-card>
@@ -921,7 +898,9 @@ function submitLead() {
         <v-container>
           <header class="section-header">
             <h2>AutoCar <span>Perícia</span></h2>
-            <p>Já pensou em fazer uma AutoCar Perícia em seu veículo em poucos cliques? Utilize nossa consulta AUTO PERÍCIA e tenha acesso completo aos dados que você precisa.</p>
+            <p>Já pensou em fazer uma AutoCar Perícia em seu veículo em poucos cliques? Utilize nossa consulta AUTO
+              PERÍCIA
+              e tenha acesso completo aos dados que você precisa.</p>
           </header>
 
           <v-row>
@@ -974,12 +953,8 @@ function submitLead() {
                   </ul>
 
                   <div class="plan-actions">
-                    <v-btn
-                      variant="outlined"
-                      block
-                      class="plan-btn-outline"
-                      @click="openExternal('https://wa.me/5544991710995?text=' + encodeURIComponent('Gostaria de contratar este plano'))"
-                    >
+                    <v-btn variant="outlined" block class="plan-btn-outline"
+                      @click="openExternal('https://wa.me/5544991710995?text=' + encodeURIComponent('Gostaria de contratar este plano'))">
                       Conheça Mais
                     </v-btn>
                     <v-btn block class="plan-btn-solid" @click="openExternal(plan.checkoutUrl)">
@@ -1008,9 +983,12 @@ function submitLead() {
       <v-container>
         <v-row class="footer-grid">
           <v-col cols="12" lg="3">
-            <img src="https://maisautocar.com.br/lovable-uploads/autocar-logo-white.png" alt="AutoCar Logo" class="footer-logo">
+            <img src="https://maisautocar.com.br/lovable-uploads/autocar-logo-white.png" alt="AutoCar Logo"
+              class="footer-logo" loading="lazy" decoding="async">
             <p class="footer-description">
-              A solução completa para gestão de revendas de veículos. Simplifique suas operações e foque no que realmente importa: vender mais.
+              A solução completa para gestão de revendas de veículos. Simplifique suas operações e foque no que
+              realmente
+              importa: vender mais.
             </p>
             <div class="footer-contact">
               <div><v-icon icon="mdi-email-outline" size="16" /> contato@maisgerencia.com.br</div>
@@ -1021,13 +999,8 @@ function submitLead() {
 
           <v-col cols="12" sm="6" lg="3">
             <h3>Links Rápidos</h3>
-            <a
-              v-for="link in quickLinks"
-              :key="link.name"
-              :href="link.href"
-              class="footer-link"
-              @click.prevent="link.href.startsWith('#') ? goTo(link.href) : openExternal(link.href)"
-            >
+            <a v-for="link in quickLinks" :key="link.name" :href="link.href" class="footer-link"
+              @click.prevent="link.href.startsWith('#') ? goTo(link.href) : openExternal(link.href)">
               {{ link.name }}
             </a>
           </v-col>
@@ -1042,15 +1015,15 @@ function submitLead() {
           <v-col cols="12" lg="3">
             <h3>Nossa Comunidade</h3>
             <p class="community-text">
-              Aponte sua câmera para o QRcode e entre para nossa comunidade e fique por dentro das principais notícias do segmento.
+              Aponte sua câmera para o QRcode e entre para nossa comunidade e fique por dentro das principais notícias
+              do
+              segmento.
             </p>
-            <img
-              src="https://maisautocar.com.br/lovable-uploads/50c54b7b-83e3-4875-920d-ce0e6cab0c9c.png"
-              alt="QR Code para nossa comunidade WhatsApp"
-              class="community-qr"
-            >
+            <img src="https://maisautocar.com.br/lovable-uploads/50c54b7b-83e3-4875-920d-ce0e6cab0c9c.png"
+              alt="QR Code para nossa comunidade WhatsApp" class="community-qr" loading="lazy" decoding="async">
             <div class="social-links">
-              <a v-for="social in socialLinks" :key="social.icon" :href="social.href" target="_blank" rel="noopener noreferrer">
+              <a v-for="social in socialLinks" :key="social.icon" :href="social.href" target="_blank"
+                rel="noopener noreferrer">
                 <v-icon :icon="social.icon" size="18" />
               </a>
             </div>
@@ -1079,21 +1052,16 @@ function submitLead() {
         </div>
       </transition>
 
-      <a :href="quoteWhatsappUrl" target="_blank" rel="noopener noreferrer" aria-label="Contatar via WhatsApp" class="wa-button">
+      <a :href="quoteWhatsappUrl" target="_blank" rel="noopener noreferrer" aria-label="Contatar via WhatsApp"
+        class="wa-button">
         <v-icon icon="mdi-whatsapp" size="38" />
       </a>
     </div>
 
     <v-dialog v-model="leadDialogOpen" max-width="640">
       <v-card class="lead-card">
-        <v-btn
-          icon
-          variant="text"
-          size="small"
-          class="lead-close-btn"
-          aria-label="Fechar modal"
-          @click="leadDialogOpen = false"
-        >
+        <v-btn icon variant="text" size="small" class="lead-close-btn" aria-label="Fechar modal"
+          @click="leadDialogOpen = false">
           <v-icon icon="mdi-close" size="20" />
         </v-btn>
 
@@ -1104,77 +1072,43 @@ function submitLead() {
             <div class="lead-form-grid">
               <div class="lead-field">
                 <label for="lead-nome">Nome da Empresa *</label>
-                <input
-                  id="lead-nome"
-                  type="text"
-                  class="lead-control lead-control-input"
-                  placeholder="Digite o nome da empresa"
-                  :value="lead.nomeEmpresa"
-                  @input="updateLead('nomeEmpresa', $event.target.value)"
-                >
+                <input id="lead-nome" type="text" class="lead-control lead-control-input"
+                  placeholder="Digite o nome da empresa" :value="lead.nomeEmpresa"
+                  @input="updateLead('nomeEmpresa', $event.target.value)">
               </div>
 
               <div class="lead-field">
                 <label for="lead-cnpj">CNPJ *</label>
-                <input
-                  id="lead-cnpj"
-                  type="text"
-                  maxlength="18"
-                  inputmode="numeric"
-                  class="lead-control lead-control-input"
-                  placeholder="00.000.000/0000-00"
-                  :value="lead.cnpj"
-                  @input="updateLead('cnpj', $event.target.value)"
-                >
+                <input id="lead-cnpj" type="text" maxlength="18" inputmode="numeric"
+                  class="lead-control lead-control-input" placeholder="00.000.000/0000-00" :value="lead.cnpj"
+                  @input="updateLead('cnpj', $event.target.value)">
               </div>
 
               <div class="lead-field">
                 <label for="lead-email">E-mail *</label>
-                <input
-                  id="lead-email"
-                  type="email"
-                  class="lead-control lead-control-input"
-                  placeholder="seu@email.com"
-                  :value="lead.email"
-                  @input="updateLead('email', $event.target.value)"
-                >
+                <input id="lead-email" type="email" class="lead-control lead-control-input" placeholder="seu@email.com"
+                  :value="lead.email" @input="updateLead('email', $event.target.value)">
               </div>
 
               <div class="lead-field">
                 <label for="lead-telefone">Telefone/WhatsApp *</label>
-                <input
-                  id="lead-telefone"
-                  type="text"
-                  maxlength="15"
-                  inputmode="numeric"
-                  class="lead-control lead-control-input"
-                  placeholder="(00) 00000-0000"
-                  :value="lead.telefone"
-                  @input="updateLead('telefone', $event.target.value)"
-                >
+                <input id="lead-telefone" type="text" maxlength="15" inputmode="numeric"
+                  class="lead-control lead-control-input" placeholder="(00) 00000-0000" :value="lead.telefone"
+                  @input="updateLead('telefone', $event.target.value)">
               </div>
 
               <div class="lead-field lead-field-full">
                 <label for="lead-quantidade">Quantidade de veículos em estoque</label>
-                <input
-                  id="lead-quantidade"
-                  type="text"
-                  class="lead-control lead-control-input"
-                  placeholder="Ex: 50 veículos"
-                  :value="lead.quantidadeVeiculos"
-                  @input="updateLead('quantidadeVeiculos', $event.target.value)"
-                >
+                <input id="lead-quantidade" type="text" class="lead-control lead-control-input"
+                  placeholder="Ex: 50 veículos" :value="lead.quantidadeVeiculos"
+                  @input="updateLead('quantidadeVeiculos', $event.target.value)">
               </div>
 
               <div class="lead-field lead-field-full">
                 <label for="lead-necessidade">Descreva sua necessidade</label>
-                <textarea
-                  id="lead-necessidade"
-                  class="lead-control lead-control-textarea"
-                  placeholder="Conte-nos mais sobre como podemos ajudar sua revenda..."
-                  :value="lead.necessidade"
-                  @input="updateLead('necessidade', $event.target.value)"
-                ></textarea>
+                <textarea id="lead-necessidade" class="lead-control lead-control-textarea"
+                  placeholder="Conte-nos mais sobre como podemos ajudar sua revenda..." :value="lead.necessidade"
+                  @input="updateLead('necessidade', $event.target.value)"></textarea>
               </div>
             </div>
 
@@ -1192,13 +1126,8 @@ function submitLead() {
       </v-card>
     </v-dialog>
 
-    <ImagePreviewDialog
-      v-model="imagePreviewOpen"
-      :src="imagePreviewSrc"
-      :title="imagePreviewTitle"
-      :image-list="imagePreviewList"
-      :start-index="imagePreviewStartIndex"
-    />
+    <ImagePreviewDialog v-model="imagePreviewOpen" :src="imagePreviewSrc" :title="imagePreviewTitle"
+      :image-list="imagePreviewList" :start-index="imagePreviewStartIndex" />
 
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3500">
       {{ snackbar.text }}

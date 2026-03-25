@@ -29,11 +29,17 @@ body {
   background: var(--ac-bg);
   color: var(--ac-text);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }
 
 .scroll-reveal {
@@ -366,6 +372,8 @@ a {
 }
 
 .nav-list {
+  display: flex;
+  align-items: center;
   gap: 1.9rem;
 }
 
@@ -1972,6 +1980,21 @@ a {
   transform: translateY(8px);
 }
 
+.clients-section,
+.section-block,
+.footer-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 900px;
+}
+
+.hero-image-main,
+.hero-image-backdrop,
+.solution-image,
+.logo-pill img,
+.community-qr {
+  transform: translateZ(0);
+}
+
 @keyframes slideClients {
   0% {
     transform: translateX(0);
@@ -2000,6 +2023,29 @@ a {
   50% {
     transform: scale(1.08);
     opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal-card {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: none !important;
+  }
+
+  .marquee-track,
+  .floating-chip,
+  .hero-blob,
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
