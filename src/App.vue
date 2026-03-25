@@ -316,10 +316,11 @@ const quoteText = 'Olá! Gostaria de mais informações sobre o sistema.'
 const quoteWhatsappUrl = computed(() => `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(quoteText)}`)
 
 const currentYear = new Date().getFullYear()
-const { lgAndUp } = useDisplay()
+const { lgAndUp, smAndDown } = useDisplay()
 const prefersReducedMotion = ref(false)
 
-const shouldAnimateHeroMotion = computed(() => lgAndUp.value && !prefersReducedMotion.value)
+const shouldAnimateHeroMotion = computed(() => !prefersReducedMotion.value)
+const heroMotionMultiplier = computed(() => (smAndDown.value ? 0.45 : 1))
 
 function formatHeroCounter(stat, value) {
   const number = Math.floor(value)
@@ -367,13 +368,14 @@ function updateHeroParallax(scrollY) {
     return
   }
 
+  const motion = heroMotionMultiplier.value
   const progress = Math.min(Math.max(scrollY / 500, 0), 1)
-  heroSectionRef.value.style.setProperty('--hero-top-shift', `${progress * 108}px`)
-  heroSectionRef.value.style.setProperty('--hero-top-scale', String(1 + progress * 0.28))
-  heroSectionRef.value.style.setProperty('--hero-bottom-shift', `${progress * 122}px`)
-  heroSectionRef.value.style.setProperty('--hero-bottom-scale', String(1 + progress * 0.26))
-  heroSectionRef.value.style.setProperty('--hero-backdrop-shift', `${progress * 140}px`)
-  heroSectionRef.value.style.setProperty('--hero-backdrop-scale', String(1 + progress * 0.3))
+  heroSectionRef.value.style.setProperty('--hero-top-shift', `${progress * 108 * motion}px`)
+  heroSectionRef.value.style.setProperty('--hero-top-scale', String(1 + progress * 0.28 * motion))
+  heroSectionRef.value.style.setProperty('--hero-bottom-shift', `${progress * 122 * motion}px`)
+  heroSectionRef.value.style.setProperty('--hero-bottom-scale', String(1 + progress * 0.26 * motion))
+  heroSectionRef.value.style.setProperty('--hero-backdrop-shift', `${progress * 140 * motion}px`)
+  heroSectionRef.value.style.setProperty('--hero-backdrop-scale', String(1 + progress * 0.3 * motion))
 }
 
 function updateScrollVisualState() {

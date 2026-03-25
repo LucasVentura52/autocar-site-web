@@ -1992,7 +1992,7 @@ img {
 .solution-image,
 .logo-pill img,
 .community-qr {
-  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 @keyframes slideClients {
