@@ -7,6 +7,7 @@
   --ac-muted: #a6afbf;
   --ac-primary: #ff7a1a;
   --ac-primary-soft: rgba(255, 122, 26, 0.16);
+  --ac-scroll-offset: 104px;
 }
 
 * {
@@ -23,6 +24,7 @@ body,
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: var(--ac-scroll-offset);
 }
 
 body {
@@ -35,6 +37,11 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.section-block[id],
+.footer-section[id] {
+  scroll-margin-top: var(--ac-scroll-offset);
 }
 
 img {

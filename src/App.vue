@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import {
   mdiAccountGroup,
@@ -333,6 +333,7 @@ let lastKnownScrollY = 0
 let revealObserver = null
 let reducedMotionQuery = null
 let handleReducedMotionChange = null
+let handleHashChange = null
 
 const lead = reactive({
   nomeEmpresa: '',
@@ -536,18 +537,32 @@ onMounted(() => {
   handleReducedMotionChange = (event) => {
     prefersReducedMotion.value = event.matches
   }
+  handleHashChange = () => {
+    if (window.location.hash) {
+      scrollToSection(window.location.hash)
+    }
+  }
   reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
   updateSolutionCardsPerRow()
   updateScrollVisualState()
   setupScrollReveal()
   window.addEventListener('resize', updateSolutionCardsPerRow)
   window.addEventListener('scroll', updateScrollVisualState, { passive: true })
+  window.addEventListener('hashchange', handleHashChange)
   runHeroCounters()
+  nextTick(() => {
+    if (window.location.hash) {
+      scrollToSection(window.location.hash, { behavior: 'auto' })
+    }
+  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateSolutionCardsPerRow)
   window.removeEventListener('scroll', updateScrollVisualState)
+  if (handleHashChange) {
+    window.removeEventListener('hashchange', handleHashChange)
+  }
   if (reducedMotionQuery && handleReducedMotionChange) {
     reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
   }
@@ -583,12 +598,29 @@ function notify(text, color = 'info') {
   snackbar.show = true
 }
 
-function goTo(hash) {
+function getScrollBehavior() {
+  return prefersReducedMotion.value ? 'auto' : 'smooth'
+}
+
+function scrollToSection(hash, options = {}) {
+  const { behavior = getScrollBehavior(), updateHistory = false } = options
   const section = document.querySelector(hash)
-  if (section) {
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  if (!section) {
+    mobileMenuOpen.value = false
+    return
   }
+
+  section.scrollIntoView({ behavior, block: 'start' })
+
+  if (updateHistory && window.location.hash !== hash) {
+    window.history.replaceState(null, '', hash)
+  }
+
   mobileMenuOpen.value = false
+}
+
+function goTo(hash) {
+  scrollToSection(hash, { updateHistory: true })
 }
 
 function openExternal(url) {
